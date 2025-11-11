@@ -36,12 +36,14 @@ If you have all repositories cloned in the same parent directory:
 
 ```bash
 # From ChefAtHands directory
-cd db && mvn clean install
-cd frontend && mvn clean install
-cd frontend-gateway && mvn clean install
-cd processing-services && mvn clean install
-cd utility-services && mvn clean install
+cd db && mvn clean install -DskipTests && cd ..
+cd frontend && mvn clean install -DskipTests && cd ..
+cd frontend-gateway && mvn clean install -DskipTests && cd ..
+cd processing-services && mvn clean install -DskipTests && cd ..
+cd utility-services && mvn clean install -DskipTests && cd ..
 ```
+
+For now mvn clean install -DskipTests because we dont have a working DB. After that use mvn clean install
 
 ## Module Repositories
 
