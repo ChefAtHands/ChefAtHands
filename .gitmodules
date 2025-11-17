@@ -1,0 +1,19 @@
+[submodule "db"]
+	path = db
+	url = https://github.com/ChefAtHands/db
+
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/ChefAtHands/frontend
+
+[submodule "frontend-gateway"]
+	path = frontend-gateway
+	url = https://github.com/ChefAtHands/frontend-gateway
+
+[submodule "processing-services"]
+	path = processing-services
+	url = https://github.com/ChefAtHands/processing-services
+
+[submodule "utility-services"]
+	path = utility-services
+	url = https://github.com/ChefAtHands/utility-services
