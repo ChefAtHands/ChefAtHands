@@ -17,3 +17,6 @@
 [submodule "utility-services"]
 	path = utility-services
 	url = https://github.com/ChefAtHands/utility-services
+[submodule "external-api-services"]
+	path = external-api-services
+	url = https://github.com/ChefAtHands/external-api-services.git
