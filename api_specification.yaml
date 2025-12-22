@@ -1,0 +1,1116 @@
+openapi: 3.0.3
+info:
+  title: ChefAtHands API
+  description: |
+    API documentation for the ChefAtHands recipe recommendation platform.
+  version: 0.1.0-SNAPSHOT
+
+servers:
+  - url: http://localhost:8082
+    description: Recommendation Service (Processing)
+  - url: http://localhost:8081
+    description: Ingredient Service
+  - url: http://localhost:8084
+    description: User Service
+  - url: http://localhost:8085
+    description: Recipe Search Service (External API)
+  - url: http://localhost:8086
+    description: Logging Service
+
+tags:
+  - name: Recommendations
+    description: Recipe recommendation endpoints based on user ingredients
+  - name: Ingredients
+    description: User ingredient management
+  - name: Users
+    description: User account management and authentication
+  - name: Recipe Search
+    description: External recipe search and details
+  - name: Logging
+    description: Application logging and monitoring
+
+paths:
+  # ========================================
+  # RECOMMENDATION SERVICE (Processing)
+  # ========================================
+  /api/recommendations:
+    get:
+      tags:
+        - Recommendations
+      summary: Get recipe recommendations for a user
+      description: |
+        Fetches recipe recommendations based on the user's saved ingredients.
+        Retrieves ingredients from ingredient-service and searches recipes via recipe-search-service.
+      operationId: getRecommendationsForUser
+      parameters:
+        - name: userID
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: ID of the user to get recommendations for
+        - name: number
+          in: query
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 10
+          description: Number of recipes to return
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+          description: Pagination offset
+        - name: diet
+          in: query
+          schema:
+            type: string
+          description: Diet preference (e.g., vegetarian, vegan, gluten free)
+        - name: type
+          in: query
+          schema:
+            type: string
+          description: Recipe type (e.g., main course, dessert, appetizer, breakfast)
+        - name: minCarbs
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Minimum carbohydrates (grams)
+        - name: maxCarbs
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Maximum carbohydrates (grams)
+        - name: minProtein
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Minimum protein (grams)
+        - name: maxProtein
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Maximum protein (grams)
+        - name: minFat
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Minimum fat (grams)
+        - name: maxFat
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Maximum fat (grams)
+        - name: minCalories
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Minimum calories
+        - name: maxCalories
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Maximum calories
+      responses:
+        '200':
+          description: Successful response with recipe recommendations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationResponse'
+        '400':
+          description: Invalid request parameters
+        '500':
+          description: Internal server error
+
+    post:
+      tags:
+        - Recommendations
+      summary: Get recipe recommendations with custom ingredients
+      description: |
+        Fetches recipe recommendations based on provided ingredients.
+        Directly searches recipes via recipe-search-service without fetching user data.
+      operationId: getRecommendationsByIngredients
+      parameters:
+        - name: number
+          in: query
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 10
+          description: Number of recipes to return
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+          description: Pagination offset
+        - name: diet
+          in: query
+          schema:
+            type: string
+          description: Diet preference (e.g., vegetarian, vegan, gluten free)
+        - name: type
+          in: query
+          schema:
+            type: string
+          description: Recipe type (e.g., main course, dessert, appetizer)
+        - name: minCarbs
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Minimum carbohydrates (grams)
+        - name: maxCarbs
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Maximum carbohydrates (grams)
+        - name: minProtein
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Minimum protein (grams)
+        - name: maxProtein
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Maximum protein (grams)
+        - name: minFat
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Minimum fat (grams)
+        - name: maxFat
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Maximum fat (grams)
+        - name: minCalories
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Minimum calories
+        - name: maxCalories
+          in: query
+          schema:
+            type: integer
+            format: int32
+          description: Maximum calories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecommendationRequest'
+      responses:
+        '200':
+          description: Successful response with recipe recommendations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationResponse'
+        '400':
+          description: Invalid request body or parameters
+        '500':
+          description: Internal server error
+
+  # ========================================
+  # INGREDIENT SERVICE
+  # ========================================
+  /api/users/{userId}/ingredients:
+    get:
+      tags:
+        - Ingredients
+      summary: Get all ingredients for a user
+      description: Retrieves all saved ingredients for the specified user
+      operationId: getUserIngredients
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: ID of the user
+      responses:
+        '200':
+          description: List of user ingredients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserIngredient'
+        '404':
+          description: User not found
+
+    post:
+      tags:
+        - Ingredients
+      summary: Add ingredient to user's inventory
+      description: Adds a new ingredient to the user's saved ingredients
+      operationId: addIngredient
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: ID of the user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserIngredient'
+      responses:
+        '201':
+          description: Ingredient successfully added
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URI of the created resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserIngredient'
+        '400':
+          description: Invalid request body
+
+  /api/users/{userId}/ingredients/{userIngredientId}:
+    delete:
+      tags:
+        - Ingredients
+      summary: Remove ingredient from user's inventory
+      description: Deletes a specific ingredient from the user's saved ingredients
+      operationId: removeIngredient
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: ID of the user
+        - name: userIngredientId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: ID of the user ingredient to remove
+      responses:
+        '204':
+          description: Ingredient successfully removed
+        '404':
+          description: Ingredient not found
+
+    patch:
+      tags:
+        - Ingredients
+      summary: Update ingredient quantity
+      description: Updates the quantity of a specific ingredient in the user's inventory
+      operationId: updateQuantity
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: ID of the user
+        - name: userIngredientId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: ID of the user ingredient to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: string
+                  description: New quantity value
+              required:
+                - quantity
+      responses:
+        '200':
+          description: Ingredient quantity updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserIngredient'
+        '404':
+          description: Ingredient not found
+
+  # ========================================
+  # USER SERVICE
+  # ========================================
+  /api/users/register:
+    post:
+      tags:
+        - Users
+      summary: Register a new user
+      description: Creates a new user account
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User successfully registered
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URI of the created user resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid request or username already exists
+
+  /api/users/login:
+    post:
+      tags:
+        - Users
+      summary: Authenticate user
+      description: Validates user credentials and returns user information
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+
+  /api/users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get user profile by ID
+      description: Retrieves user profile information
+      operationId: getUserById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: User ID
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: User not found
+
+    put:
+      tags:
+        - Users
+      summary: Update user profile
+      description: Updates user account information
+      operationId: updateUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: User not found
+
+    delete:
+      tags:
+        - Users
+      summary: Delete user account
+      description: Permanently deletes a user account
+      operationId: deleteUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: User ID
+      responses:
+        '204':
+          description: User account deleted
+        '404':
+          description: User not found
+
+  /api/users/username/{username}:
+    get:
+      tags:
+        - Users
+      summary: Check if username exists
+      description: Validates whether a username is already taken
+      operationId: usernameExists
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Username to check
+      responses:
+        '200':
+          description: Username availability status
+          content:
+            application/json:
+              schema:
+                type: boolean
+                description: True if username exists, false otherwise
+
+  # ========================================
+  # RECIPE SEARCH SERVICE (External API)
+  # ========================================
+  /api/recipes/search:
+    post:
+      tags:
+        - Recipe Search
+      summary: Search recipes by ingredients
+      description: |
+        Searches for recipes using Spoonacular API based on ingredients and filters.
+        Supports pagination, nutritional constraints, diet preferences, and recipe types.
+      operationId: searchRecipes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeSearchRequest'
+      responses:
+        '200':
+          description: Recipe search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeSearchResponse'
+        '400':
+          description: Invalid search request
+        '500':
+          description: External API error
+
+  /api/recipes/{id}:
+    get:
+      tags:
+        - Recipe Search
+      summary: Get recipe details by ID
+      description: Retrieves detailed information about a specific recipe from Spoonacular API
+      operationId: getRecipeById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Recipe ID
+      responses:
+        '200':
+          description: Recipe details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '404':
+          description: Recipe not found
+
+  # ========================================
+  # LOGGING SERVICE
+  # ========================================
+  /logs:
+    get:
+      tags:
+        - Logging
+      summary: Get all log entries
+      description: Retrieves all application log entries
+      operationId: getAllLogs
+      responses:
+        '200':
+          description: List of log entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LogEntry'
+
+    post:
+      tags:
+        - Logging
+      summary: Create a log entry
+      description: Adds a new log entry to the system
+      operationId: createLog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogEntry'
+      responses:
+        '201':
+          description: Log entry created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogEntry'
+
+  /logs/level/{level}:
+    get:
+      tags:
+        - Logging
+      summary: Get logs by level
+      description: Retrieves log entries filtered by severity level
+      operationId: getLogsByLevel
+      parameters:
+        - name: level
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [INFO, WARN, ERROR]
+          description: Log level to filter by
+      responses:
+        '200':
+          description: Filtered log entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LogEntry'
+
+  /logs/info:
+    post:
+      tags:
+        - Logging
+      summary: Log info message
+      description: Creates an INFO level log entry
+      operationId: logInfo
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '201':
+          description: Info log created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogEntry'
+
+  /logs/warn:
+    post:
+      tags:
+        - Logging
+      summary: Log warning message
+      description: Creates a WARN level log entry
+      operationId: logWarn
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '201':
+          description: Warning log created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogEntry'
+
+  /logs/error:
+    post:
+      tags:
+        - Logging
+      summary: Log error message
+      description: Creates an ERROR level log entry
+      operationId: logError
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '201':
+          description: Error log created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogEntry'
+
+# ========================================
+# COMPONENT SCHEMAS
+# ========================================
+components:
+  schemas:
+    # Recommendation Service Schemas
+    RecommendationResponse:
+      type: object
+      properties:
+        recipes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recipe'
+          description: List of recommended recipes
+        total:
+          type: integer
+          format: int32
+          description: Total number of recipes found
+        offset:
+          type: integer
+          format: int32
+          description: Current pagination offset
+        limit:
+          type: integer
+          format: int32
+          description: Number of recipes per page
+
+    RecommendationRequest:
+      type: object
+      required:
+        - ingredients
+      properties:
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/IngredientRequest'
+          minItems: 1
+          description: List of ingredients to search with
+
+    IngredientRequest:
+      type: object
+      required:
+        - name
+        - ingredientID
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Name of the ingredient
+        ingredientID:
+          type: integer
+          format: int64
+          description: Unique identifier for the ingredient
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Quantity of the ingredient
+
+    Recipe:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Recipe ID
+        title:
+          type: string
+          description: Recipe title
+        name:
+          type: string
+          description: Recipe name (alternative field)
+        description:
+          type: string
+          description: Recipe description
+        summary:
+          type: string
+          description: HTML summary of the recipe
+        image:
+          type: string
+          description: URL to recipe image
+        category:
+          type: string
+          description: Recipe category
+        preparationTime:
+          type: integer
+          format: int32
+          description: Preparation time in minutes
+        readyInMinutes:
+          type: integer
+          format: int32
+          description: Total ready time in minutes
+        servings:
+          type: integer
+          format: int32
+          description: Number of servings
+        calories:
+          type: integer
+          format: int32
+          description: Calories per serving
+        protein:
+          type: integer
+          format: int32
+          description: Protein in grams
+        carbs:
+          type: integer
+          format: int32
+          description: Carbohydrates in grams
+        fat:
+          type: integer
+          format: int32
+          description: Fat in grams
+        sourceUrl:
+          type: string
+          description: Original recipe URL
+        nutrition:
+          $ref: '#/components/schemas/Nutrition'
+        extendedIngredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtendedIngredient'
+        analyzedInstructions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalyzedInstruction'
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipeIngredient'
+        instructions:
+          type: array
+          items:
+            type: string
+
+    Nutrition:
+      type: object
+      properties:
+        nutrients:
+          type: array
+          items:
+            $ref: '#/components/schemas/Nutrient'
+
+    Nutrient:
+      type: object
+      properties:
+        name:
+          type: string
+        amount:
+          type: number
+          format: double
+        unit:
+          type: string
+
+    ExtendedIngredient:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        amount:
+          type: number
+          format: double
+        unit:
+          type: string
+        original:
+          type: string
+
+    AnalyzedInstruction:
+      type: object
+      properties:
+        name:
+          type: string
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstructionStep'
+
+    InstructionStep:
+      type: object
+      properties:
+        number:
+          type: integer
+          format: int32
+        step:
+          type: string
+
+    RecipeIngredient:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        quantity:
+          type: string
+
+    # Ingredient Service Schemas
+    UserIngredient:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: User ingredient ID
+        userId:
+          type: integer
+          format: int32
+          description: ID of the user who owns this ingredient
+        ingredientId:
+          type: integer
+          format: int32
+          description: Reference to the ingredient
+        quantity:
+          type: string
+          maxLength: 50
+          description: Quantity as a string (e.g., "2 cups", "500g")
+
+    # User Service Schemas
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - password
+        - email
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: Unique username
+        password:
+          type: string
+          minLength: 6
+          description: User password (plain text, should be hashed)
+        email:
+          type: string
+          format: email
+          description: Valid email address
+
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: Username
+        password:
+          type: string
+          description: Password
+
+    LoginResponse:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int32
+          description: User ID
+        username:
+          type: string
+          description: Username
+        email:
+          type: string
+          description: User email
+        message:
+          type: string
+          description: Login status message
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: User ID
+        username:
+          type: string
+          description: Username
+        email:
+          type: string
+          description: User email
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: New username
+        email:
+          type: string
+          format: email
+          description: New email address
+        password:
+          type: string
+          minLength: 6
+          description: New password
+
+    # Recipe Search Service Schemas
+    RecipeSearchRequest:
+      type: object
+      required:
+        - ingredients
+      properties:
+        ingredients:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: List of ingredient names to search with
+        number:
+          type: integer
+          format: int32
+          minimum: 1
+          default: 10
+          description: Number of results to return
+        offset:
+          type: integer
+          format: int32
+          minimum: 0
+          default: 0
+          description: Pagination offset
+        minProtein:
+          type: integer
+          format: int32
+          description: Minimum protein in grams
+        maxProtein:
+          type: integer
+          format: int32
+          description: Maximum protein in grams
+        minCarbs:
+          type: integer
+          format: int32
+          description: Minimum carbohydrates in grams
+        maxCarbs:
+          type: integer
+          format: int32
+          description: Maximum carbohydrates in grams
+        minCalories:
+          type: integer
+          format: int32
+          description: Minimum calories
+        maxCalories:
+          type: integer
+          format: int32
+          description: Maximum calories
+        minFat:
+          type: integer
+          format: int32
+          description: Minimum fat in grams
+        maxFat:
+          type: integer
+          format: int32
+          description: Maximum fat in grams
+        type:
+          type: string
+          description: Recipe type (e.g., main course, dessert, appetizer, breakfast)
+        diet:
+          type: string
+          description: Diet preference (e.g., vegetarian, vegan, gluten free, ketogenic)
+
+    RecipeSearchResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recipe'
+          description: List of recipes matching search criteria
+        offset:
+          type: integer
+          format: int32
+          description: Current pagination offset
+        number:
+          type: integer
+          format: int32
+          description: Number of results returned
+        totalResults:
+          type: integer
+          format: int32
+          description: Total number of recipes found
+
+    # Logging Service Schemas
+    LogEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Log entry ID
+        level:
+          type: string
+          enum: [INFO, WARN, ERROR]
+          description: Log severity level
+        message:
+          type: string
+          description: Log message content
+        created:
+          type: string
+          format: date-time
+          description: Timestamp when the log was created
