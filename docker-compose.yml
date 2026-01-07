@@ -70,6 +70,15 @@ services:
       - recommendation-service
     restart: unless-stopped
 
+  frontend:
+    image: anejt/chefathands-frontend:latest
+    container_name: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - frontend-gateway
+    restart: unless-stopped
+
 networks:
   default:
     name: chefathands-network
