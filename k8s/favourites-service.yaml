@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: favourites-service
+  namespace: chefathands
+  labels:
+    app: favourites-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: favourites-service
+  template:
+    metadata:
+      labels:
+        app: favourites-service
+    spec:
+      containers:
+      - name: favourites-service
+        image: anejt/chefathands-favourites-service:latest
+        ports:
+        - containerPort: 8086
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "kubernetes"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: favourites-service
+  namespace: chefathands
+spec:
+  selector:
+    app: favourites-service
+  ports:
+  - protocol: TCP
+    port: 8086
+    targetPort: 8086
+  type: ClusterIP
