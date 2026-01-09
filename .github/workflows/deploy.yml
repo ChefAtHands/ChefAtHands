@@ -9,8 +9,6 @@ on:
 env:
   DOCKER_REGISTRY: docker.io
   DOCKER_USERNAME: anejt
-  AKS_RESOURCE_GROUP: chefathands-rg
-  AKS_CLUSTER_NAME: chefathands-aks
   NAMESPACE: chefathands
 
 jobs:
@@ -138,17 +136,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
 
-      - name: Get AKS credentials
+      - name: Configure kubectl with kubeconfig
         run: |
-          az aks get-credentials \
-            --resource-group ${{ env.AKS_RESOURCE_GROUP }} \
-            --name ${{ env.AKS_CLUSTER_NAME }} \
-            --overwrite-existing
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
 
       - name: Create namespace if not exists
         run: |
