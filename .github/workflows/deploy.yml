@@ -9,8 +9,8 @@ on:
 env:
   DOCKER_REGISTRY: docker.io
   DOCKER_USERNAME: anejt
-  AKS_RESOURCE_GROUP: cah-rg
-  AKS_CLUSTER_NAME: cah-aks
+  AKS_RESOURCE_GROUP: chefathands-rg
+  AKS_CLUSTER_NAME: chefathands-aks
   NAMESPACE: chefathands
 
 jobs:
