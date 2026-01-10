@@ -119,6 +119,7 @@ jobs:
 
       - name: Extract Maven artifacts
         run: |
+          mkdir -p ~/.m2/repository
           cd ~/.m2/repository
           tar -xzf /tmp/maven-artifacts.tar.gz
 
