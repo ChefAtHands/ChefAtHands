@@ -12,102 +12,80 @@ env:
   NAMESPACE: chefathands
 
 jobs:
-  build-shared-libraries:
-    name: Build Shared Libraries
+  build-logging:
+    name: Build Logging Service
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven
 
-      - name: Build parent POM
+      - name: Build parent and logging
         run: |
-          if [ -f "pom.xml" ]; then
-            mvn clean install -N -DskipTests
-          fi
-
-      - name: Build logging-service library
-        run: |
+          mvn clean install -N -DskipTests
           cd utility-services/logging-service
           mvn clean install -DskipTests
 
-      - name: Cache Maven repository
-        uses: actions/cache@v3
+      - name: Upload logging JAR
+        uses: actions/upload-artifact@v4
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          name: logging-jar
+          path: utility-services/logging-service/target/*.jar
+          retention-days: 1
 
-  build-and-push:
-    name: Build and Push Docker Images
+  build-services:
+    name: Build Services
     runs-on: ubuntu-latest
-    needs: build-shared-libraries
+    needs: build-logging
     strategy:
       fail-fast: false
       matrix:
         service:
           - name: ingredient-service
             path: utility-services/ingredient-service
-            image: chefathands-ingredient-service
           - name: user-service
             path: utility-services/user-service
-            image: chefathands-user-service
           - name: favourites-service
             path: utility-services/favourites-service
-            image: chefathands-favourites-service
           - name: history-service
             path: utility-services/history-service
-            image: chefathands-history-service
-          - name: logging-service
-            path: utility-services/logging-service
-            image: chefathands-logging-service
           - name: notification-service
             path: utility-services/notification-service
-            image: chefathands-notification-service
           - name: recipe-search-service
             path: external-api-services/recipe-search-service
-            image: chefathands-recipe-search-service
           - name: recommendation-service
             path: processing-services/recommendation-service
-            image: chefathands-recommendation-service
           - name: frontend-gateway
             path: frontend-gateway
-            image: chefathands-frontend-gateway
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven
 
-      - name: Restore Maven cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+      - name: Install parent POMs
+        run: |
+          mvn clean install -N -DskipTests
+          cd utility-services
+          mvn clean install -N -DskipTests
 
-      - name: Build with Maven
+      - name: Install logging-service
+        run: |
+          cd utility-services/logging-service
+          mvn clean install -DskipTests
+
+      - name: Build service
         run: |
           cd ${{ matrix.service.path }}
           mvn clean package -DskipTests
@@ -124,35 +102,56 @@ jobs:
           context: ${{ matrix.service.path }}
           push: true
           tags: |
-            ${{ env.DOCKER_USERNAME }}/${{ matrix.service.image }}:latest
-            ${{ env.DOCKER_USERNAME }}/${{ matrix.service.image }}:${{ github.sha }}
+            ${{ env.DOCKER_USERNAME }}/chefathands-${{ matrix.service.name }}:latest
+            ${{ env.DOCKER_USERNAME }}/chefathands-${{ matrix.service.name }}:${{ github.sha }}
+
+  build-logging-image:
+    name: Build Logging Image
+    runs-on: ubuntu-latest
+    needs: build-logging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download logging JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: logging-jar
+          path: utility-services/logging-service/target/
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: utility-services/logging-service
+          push: true
+          tags: |
+            ${{ env.DOCKER_USERNAME }}/chefathands-logging-service:latest
+            ${{ env.DOCKER_USERNAME }}/chefathands-logging-service:${{ github.sha }}
 
   build-frontend:
-    name: Build and Push Frontend
+    name: Build Frontend
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: frontend/chefathands-frontend/package-lock.json
 
-      - name: Install dependencies
+      - name: Install and build
         run: |
           cd frontend/chefathands-frontend
           npm install
-
-      - name: Build frontend
-        run: |
-          cd frontend/chefathands-frontend
           CI=false npm run build
 
       - name: Log in to Docker Hub
@@ -161,7 +160,7 @@ jobs:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push frontend image
+      - name: Build and push image
         uses: docker/build-push-action@v5
         with:
           context: frontend/chefathands-frontend
@@ -170,10 +169,10 @@ jobs:
             ${{ env.DOCKER_USERNAME }}/chefathands-frontend:latest
             ${{ env.DOCKER_USERNAME }}/chefathands-frontend:${{ github.sha }}
 
-  deploy-to-aks:
+  deploy:
     name: Deploy to AKS
     runs-on: ubuntu-latest
-    needs: [build-and-push, build-frontend]
+    needs: [build-services, build-logging-image, build-frontend]
     
     steps:
       - name: Checkout code
@@ -188,17 +187,8 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
-      - name: Create namespace
+      - name: Deploy
         run: |
           kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: Deploy services
-        run: |
-          kubectl apply -f k8s/database-secret.yaml
           kubectl apply -f k8s/
           kubectl rollout restart deployment -n ${{ env.NAMESPACE }}
-          kubectl rollout status deployment -n ${{ env.NAMESPACE }} --timeout=5m
-
-      - name: Show status
-        run: |
-          kubectl get pods,svc,ingress -n ${{ env.NAMESPACE }}
