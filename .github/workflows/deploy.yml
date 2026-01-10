@@ -28,13 +28,15 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven
 
       - name: Build parent POM
         run: |
-          if [ -f "pom.xml" ]; then
-            mvn clean install -N -DskipTests
-          fi
+          mvn clean install -N -DskipTests
+
+      - name: Build utility-services parent
+        run: |
+          cd utility-services
+          mvn clean install -N -DskipTests
 
       - name: Build logging-service library
         run: |
@@ -42,12 +44,10 @@ jobs:
           mvn clean install -DskipTests
 
       - name: Cache Maven repository
-        uses: actions/cache@v3
+        uses: actions/cache/save@v3
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          key: ${{ runner.os }}-maven-${{ github.sha }}
 
   build-and-push:
     name: Build and Push Docker Images
@@ -97,15 +97,12 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven
 
       - name: Restore Maven cache
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          key: ${{ runner.os }}-maven-${{ github.sha }}
 
       - name: Build with Maven
         run: |
