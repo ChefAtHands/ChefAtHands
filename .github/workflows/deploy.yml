@@ -28,6 +28,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: maven
 
       - name: Build parent POM
         run: |
@@ -43,11 +44,11 @@ jobs:
           cd utility-services/logging-service
           mvn clean install -DskipTests
 
-      - name: Upload Maven repository
+      - name: Upload Maven Local Repository
         uses: actions/upload-artifact@v4
         with:
           name: maven-repo
-          path: ~/.m2/repository/com/chefathands/
+          path: ~/.m2/repository/
           retention-days: 1
 
   build-and-push:
@@ -99,21 +100,16 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Download Maven artifacts
+      - name: Download Maven Repository
         uses: actions/download-artifact@v4
         with:
           name: maven-repo
-          path: ~/.m2/repository/com/chefathands/
+          path: ~/.m2/repository/
 
-      - name: Build parent POM (for dependencies)
+      - name: Verify logging-service dependency
         run: |
-          mvn clean install -N -DskipTests
-
-      - name: Build utility-services parent (if needed)
-        if: startsWith(matrix.service.path, 'utility-services/')
-        run: |
-          cd utility-services
-          mvn clean install -N -DskipTests
+          echo "Checking for logging-service artifact..."
+          ls -la ~/.m2/repository/com/chefathands/logging-service/ || echo "logging-service not found in cache"
 
       - name: Build with Maven
         run: |
