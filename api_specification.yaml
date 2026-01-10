@@ -10,10 +10,10 @@ servers:
     description: ChefAtHands API (via Gateway)
     variables:
       environment:
-        default: chefathands.azure.com
+        default: 9.235.148.20
         description: Deployment environment
         enum:
-          - chefathands.azure.com
+          - 9.235.148.20
           - localhost:8080
   - url: http://localhost:8080/api
     description: Local Development (via Frontend Gateway)
