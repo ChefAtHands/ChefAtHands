@@ -47,14 +47,19 @@ jobs:
         run: |
           echo "Listing logging-service artifacts:"
           ls -la ~/.m2/repository/com/chefathands/logging-service/0.1.0-SNAPSHOT/
+          echo "Contents:"
+          ls -la ~/.m2/repository/com/chefathands/logging-service/0.1.0-SNAPSHOT/*.jar
+
+      - name: Create tarball of Maven artifacts
+        run: |
+          cd ~/.m2/repository
+          tar -czf /tmp/maven-artifacts.tar.gz com/
 
       - name: Upload Maven artifacts
         uses: actions/upload-artifact@v4
         with:
           name: maven-artifacts
-          path: |
-            ~/.m2/repository/com/chefathands/
-            ~/.m2/repository/org/springframework/
+          path: /tmp/maven-artifacts.tar.gz
           retention-days: 1
 
   build-and-push:
@@ -110,18 +115,28 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: maven-artifacts
-          path: ~/.m2/repository/
+          path: /tmp/
+
+      - name: Extract Maven artifacts
+        run: |
+          cd ~/.m2/repository
+          tar -xzf /tmp/maven-artifacts.tar.gz
 
       - name: Verify logging-service dependency
         run: |
           echo "Checking Maven repository structure:"
           ls -la ~/.m2/repository/com/chefathands/ || echo "chefathands directory not found"
-          ls -la ~/.m2/repository/com/chefathands/logging-service/ || echo "logging-service not found"
+          ls -la ~/.m2/repository/com/chefathands/logging-service/0.1.0-SNAPSHOT/ || echo "logging-service not found"
 
       - name: Build with Maven
         run: |
           cd ${{ matrix.service.path }}
-          mvn clean package -DskipTests -X | tail -100
+          mvn clean package -DskipTests
+
+      - name: Verify JAR was created
+        run: |
+          echo "Checking for JAR file:"
+          ls -la ${{ matrix.service.path }}/target/*.jar
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
