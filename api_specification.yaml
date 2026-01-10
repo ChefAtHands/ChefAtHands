@@ -6,16 +6,33 @@ info:
   version: 0.1.0-SNAPSHOT
 
 servers:
+  - url: https://{environment}/api
+    description: ChefAtHands API (via Gateway)
+    variables:
+      environment:
+        default: chefathands.azure.com
+        description: Deployment environment
+        enum:
+          - chefathands.azure.com
+          - localhost:8080
+  - url: http://localhost:8080/api
+    description: Local Development (via Frontend Gateway)
   - url: http://localhost:8082
-    description: Recommendation Service (Processing)
+    description: Recommendation Service (Local, Direct)
   - url: http://localhost:8081
-    description: Ingredient Service
+    description: Ingredient Service (Local, Direct)
   - url: http://localhost:8084
-    description: User Service
+    description: User Service (Local, Direct)
   - url: http://localhost:8085
-    description: Recipe Search Service (External API)
+    description: Recipe Search Service (Local, Direct)
   - url: http://localhost:8086
-    description: Logging Service
+    description: Logging Service (Local, Direct)
+  - url: http://localhost:8087
+    description: Favourites Service (Local, Direct)
+  - url: http://localhost:8088
+    description: History Service (Local, Direct)
+  - url: http://localhost:8089
+    description: Notification Service (Local, Direct)
 
 tags:
   - name: Recommendations
@@ -28,6 +45,14 @@ tags:
     description: External recipe search and details
   - name: Logging
     description: Application logging and monitoring
+  - name: Favourites
+    description: User favourite recipes management
+  - name: History
+    description: User recipe history tracking
+  - name: Notifications
+    description: User notification management
+  - name: Health
+    description: Service health check endpoints
 
 paths:
   # ========================================
@@ -708,6 +733,277 @@ paths:
               schema:
                 $ref: '#/components/schemas/LogEntry'
 
+  # ========================================
+  # FAVOURITES SERVICE
+  # ========================================
+  /api/users/{userId}/favourites:
+    get:
+      tags:
+        - Favourites
+      summary: Get user's favourite recipes
+      description: Retrieves all favourite recipes for a user (mock implementation)
+      operationId: getUserFavourites
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: User ID
+      responses:
+        '200':
+          description: List of favourite recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FavouriteRecipe'
+        '404':
+          description: User not found
+
+    post:
+      tags:
+        - Favourites
+      summary: Add recipe to favourites
+      description: Adds a recipe to user's favourites (mock implementation)
+      operationId: addFavourite
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavouriteRecipeRequest'
+      responses:
+        '201':
+          description: Recipe added to favourites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavouriteRecipe'
+        '400':
+          description: Invalid request
+
+  /api/users/{userId}/favourites/{recipeId}:
+    delete:
+      tags:
+        - Favourites
+      summary: Remove recipe from favourites
+      description: Removes a recipe from user's favourites (mock implementation)
+      operationId: removeFavourite
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: User ID
+        - name: recipeId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Recipe ID
+      responses:
+        '204':
+          description: Recipe removed from favourites
+        '404':
+          description: Recipe not found in favourites
+
+  # ========================================
+  # HISTORY SERVICE
+  # ========================================
+  /api/users/{userId}/history:
+    get:
+      tags:
+        - History
+      summary: Get user's recipe history
+      description: Retrieves user's recipe view history (mock implementation)
+      operationId: getUserHistory
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: User ID
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            format: int32
+            default: 20
+          description: Number of history entries to return
+      responses:
+        '200':
+          description: List of recipe history entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HistoryEntry'
+        '404':
+          description: User not found
+
+    post:
+      tags:
+        - History
+      summary: Add recipe to history
+      description: Records that a user viewed a recipe (mock implementation)
+      operationId: addToHistory
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HistoryEntryRequest'
+      responses:
+        '201':
+          description: Recipe added to history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryEntry'
+        '400':
+          description: Invalid request
+
+  # ========================================
+  # NOTIFICATION SERVICE
+  # ========================================
+  /api/users/{userId}/notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Get user notifications
+      description: Retrieves all notifications for a user (mock implementation)
+      operationId: getUserNotifications
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: User ID
+        - name: unreadOnly
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Filter to show only unread notifications
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+        '404':
+          description: User not found
+
+    post:
+      tags:
+        - Notifications
+      summary: Create notification
+      description: Creates a new notification for a user (mock implementation)
+      operationId: createNotification
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+      responses:
+        '201':
+          description: Notification created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          description: Invalid request
+
+  /api/users/{userId}/notifications/{notificationId}:
+    patch:
+      tags:
+        - Notifications
+      summary: Mark notification as read
+      description: Marks a notification as read (mock implementation)
+      operationId: markNotificationRead
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: User ID
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Notification ID
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '404':
+          description: Notification not found
+
+  # ========================================
+  # HEALTH CHECK ENDPOINTS
+  # ========================================
+  /api/recommendations/health:
+    get:
+      tags:
+        - Health
+      summary: Recommendation service health check
+      description: Returns health status of recommendation service
+      operationId: recommendationHealthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+
 # ========================================
 # COMPONENT SCHEMAS
 # ========================================
@@ -1114,3 +1410,134 @@ components:
           type: string
           format: date-time
           description: Timestamp when the log was created
+
+    # Favourites Service Schemas
+    FavouriteRecipe:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Favourite entry ID
+        userId:
+          type: integer
+          format: int64
+          description: User ID
+        recipeId:
+          type: integer
+          format: int64
+          description: Recipe ID
+        recipeName:
+          type: string
+          description: Recipe name
+        addedAt:
+          type: string
+          format: date-time
+          description: Timestamp when recipe was added to favourites
+
+    FavouriteRecipeRequest:
+      type: object
+      required:
+        - recipeId
+        - recipeName
+      properties:
+        recipeId:
+          type: integer
+          format: int64
+          description: Recipe ID
+        recipeName:
+          type: string
+          description: Recipe name
+
+    # History Service Schemas
+    HistoryEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: History entry ID
+        userId:
+          type: integer
+          format: int64
+          description: User ID
+        recipeId:
+          type: integer
+          format: int64
+          description: Recipe ID
+        recipeName:
+          type: string
+          description: Recipe name
+        viewedAt:
+          type: string
+          format: date-time
+          description: Timestamp when recipe was viewed
+
+    HistoryEntryRequest:
+      type: object
+      required:
+        - recipeId
+        - recipeName
+      properties:
+        recipeId:
+          type: integer
+          format: int64
+          description: Recipe ID
+        recipeName:
+          type: string
+          description: Recipe name
+
+    # Notification Service Schemas
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Notification ID
+        userId:
+          type: integer
+          format: int64
+          description: User ID
+        message:
+          type: string
+          description: Notification message
+        type:
+          type: string
+          enum: [INFO, WARNING, ALERT]
+          description: Notification type
+        isRead:
+          type: boolean
+          description: Whether notification has been read
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when notification was created
+
+    NotificationRequest:
+      type: object
+      required:
+        - message
+        - type
+      properties:
+        message:
+          type: string
+          description: Notification message
+        type:
+          type: string
+          enum: [INFO, WARNING, ALERT]
+          description: Notification type
+
+    # Health Check Schemas
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Service status (UP/DOWN)
+        service:
+          type: string
+          description: Service name
+        timestamp:
+          type: string
+          description: Current timestamp in milliseconds
