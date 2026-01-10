@@ -43,11 +43,12 @@ jobs:
           cd utility-services/logging-service
           mvn clean install -DskipTests
 
-      - name: Cache Maven repository
-        uses: actions/cache/save@v3
+      - name: Upload Maven repository
+        uses: actions/upload-artifact@v4
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ github.sha }}
+          name: maven-repo
+          path: ~/.m2/repository/com/chefathands/
+          retention-days: 1
 
   build-and-push:
     name: Build and Push Docker Images
@@ -98,11 +99,21 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Restore Maven cache
-        uses: actions/cache/restore@v3
+      - name: Download Maven artifacts
+        uses: actions/download-artifact@v4
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ github.sha }}
+          name: maven-repo
+          path: ~/.m2/repository/com/chefathands/
+
+      - name: Build parent POM (for dependencies)
+        run: |
+          mvn clean install -N -DskipTests
+
+      - name: Build utility-services parent (if needed)
+        if: startsWith(matrix.service.path, 'utility-services/')
+        run: |
+          cd utility-services
+          mvn clean install -N -DskipTests
 
       - name: Build with Maven
         run: |
@@ -145,12 +156,14 @@ jobs:
       - name: Install dependencies
         run: |
           cd frontend/chefathands-frontend
-          npm install
+          npm ci
 
       - name: Build frontend
         run: |
           cd frontend/chefathands-frontend
-          CI=false npm run build
+          npm run build
+        env:
+          CI: false
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
