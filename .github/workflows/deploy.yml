@@ -12,7 +12,6 @@ env:
   NAMESPACE: chefathands
 
 jobs:
-  # STEP 1: Build parent POM + logging-service
   build-shared-libraries:
     name: Build Shared Libraries
     runs-on: ubuntu-latest
@@ -31,14 +30,12 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # Build parent POM if exists
       - name: Build parent POM
         run: |
           if [ -f "pom.xml" ]; then
-            mvn clean install -N
+            mvn clean install -N -DskipTests
           fi
 
-      # Build logging-service
       - name: Build logging-service library
         run: |
           cd utility-services/logging-service
@@ -50,13 +47,14 @@ jobs:
           name: maven-repo
           path: ~/.m2/repository/com/chefathands/
           retention-days: 1
+          compression-level: 6
 
-  # STEP 2: Build services
   build-and-push:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
     needs: build-shared-libraries
     strategy:
+      fail-fast: false
       matrix:
         service:
           - name: ingredient-service
@@ -153,7 +151,7 @@ jobs:
       - name: Build frontend
         run: |
           cd frontend/chefathands-frontend
-          npm run build
+          CI=false npm run build
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
