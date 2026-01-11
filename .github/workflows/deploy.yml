@@ -6,6 +6,11 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 env:
   DOCKER_REGISTRY: docker.io
   DOCKER_USERNAME: anejt
@@ -52,6 +57,9 @@ jobs:
           cd ../favourites-service && mvn test
           cd ../history-service && mvn test
           cd ../notification-service && mvn test
+          cd ../logging-service && mvn test
+          cd ../../external-api-services/recipe-search-service && mvn test
+          cd ../../processing-services/recommendation-service && mvn test
           cd ../../frontend-gateway && mvn test
 
       - name: Generate test report
