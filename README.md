@@ -45,8 +45,8 @@ Our automated CI/CD pipeline is built with **GitHub Actions** and performs the f
 ## Microservices Architecture
 
 ### Utility Services
-| Service | Port | Description | Status |
-|---------|------|-------------|--------|
+| Service | Port | Description |
+|---------|------|-------------|
 | **ingredient-service** | 8081 | Manages ingredients and user inventory |
 | **user-service** | 8083 | User authentication and profiles |
 | **logging-service** | 8082 | Centralized logging |
@@ -55,18 +55,18 @@ Our automated CI/CD pipeline is built with **GitHub Actions** and performs the f
 | **history-service** | 8088 | Recipe search history |
 
 ### Processing Services
-| Service | Port | Description | Status |
-|---------|------|-------------|--------|
+| Service | Port | Description |
+|---------|------|-------------|
 | **recommendation-service** | 8084 | recipe recommendations |
 
 ### External API Services
-| Service | Port | Description | Status |
-|---------|------|-------------|--------|
+| Service | Port | Description |
+|---------|------|-------------|
 | **recipe-search-service** | 8085 | Spoonacular API integration |
 
 ### Gateway & Frontend
-| Component | Port | Description | Status |
-|-----------|------|-------------|--------|
+| Component | Port | Description |
+|-----------|------|-------------|
 | **frontend-gateway** | 8080 | API Gateway for React frontend |
 | **React Frontend** | 3000 (dev) / 80 (prod) | User interface |
 
