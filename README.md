@@ -1,19 +1,78 @@
-# ChefAtHands
+# ChefAtHands 🍳
 
-Microservices-based recipe recommendation system that helps users find recipes based on their available ingredients.
+![Build Status](https://github.com/yourusername/ChefAtHands/actions/workflows/deploy.yml/badge.svg)
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
+![Deployment](https://img.shields.io/badge/deployment-AKS-blue)
 
-## Prerequisites
+Microservices-based recipe recommendation system that helps users find recipes based on their available ingredients. Built with Spring Boot microservices, React frontend, and deployed on Azure Kubernetes Service (AKS).
 
-- Java 19
+## 🏗️ Architecture Overview
+
+ChefAtHands is a cloud-native microservices application featuring:
+- **9 Spring Boot Microservices**
+- **React Frontend (SPA)**
+- **Azure SQL Database**
+- **Kubernetes Orchestration (AKS)**
+- **Automated CI/CD Pipeline**
+- **Docker Containerization**
+
+## 🚀 Live Deployment
+
+The application is automatically deployed to **Azure Kubernetes Service (AKS)** on every commit to the `main` branch.
+
+**Production URL:** `http://9.235.148.20/`
+
+## 📋 Prerequisites
+
+### For Development:
+- Java 17
 - Maven 3.6+
 - Docker & Docker Compose
-- Node.js & npm (for frontend development)
+- Node.js 20+ & npm
+- kubectl (for Kubernetes operations)
 
-## Quick Start with Docker
+## 🔄 CI/CD Pipeline
 
-### 1. Pull and Run All Services
+Our automated CI/CD pipeline is built with **GitHub Actions** and performs the following on every commit:
 
-The easiest way to run the entire application:
+```
+┌─────────────┐      ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+│   Commit    │ ───> │    Test     │ ───> │    Build    │ ───> │   Deploy    │
+│   to main   │      │  All Tests  │      │   Docker    │      │   to AKS    │
+└─────────────┘      └─────────────┘      └─────────────┘      └─────────────┘
+```
+
+## 🏛️ Microservices Architecture
+
+### Utility Services
+| Service | Port | Description | Status |
+|---------|------|-------------|--------|
+| **ingredient-service** | 8081 | Manages ingredients and user inventory | ✅ Active |
+| **user-service** | 8083 | User authentication and profiles | ✅ Active |
+| **logging-service** | 8082 | Centralized logging | ✅ Active |
+| **favourites-service** | 8086 | User recipe favourites | ✅ Active |
+| **notification-service** | 8087 | User notifications | ✅ Active |
+| **history-service** | 8088 | Recipe search history | ✅ Active |
+
+### Processing Services
+| Service | Port | Description | Status |
+|---------|------|-------------|--------|
+| **recommendation-service** | 8084 | recipe recommendations | ✅ Active |
+
+### External API Services
+| Service | Port | Description | Status |
+|---------|------|-------------|--------|
+| **recipe-search-service** | 8085 | Spoonacular API integration | ✅ Active |
+
+### Gateway & Frontend
+| Component | Port | Description | Status |
+|-----------|------|-------------|--------|
+| **frontend-gateway** | 8080 | API Gateway for React frontend | ✅ Active |
+| **React Frontend** | 3000 (dev) / 80 (prod) | User interface | ✅ Active |
+
+## 🐳 Docker Quick Start
+
+### Pull and Run 
 
 ```bash
 # Pull all services from Docker Hub
@@ -27,106 +86,146 @@ docker-compose ps
 
 # View logs
 docker-compose logs -f
-```
 
-All backend services will be available:
-- Frontend Gateway: `http://localhost:8080`
-- Ingredient Service: `http://localhost:8081`
-- Logging Service: `http://localhost:8082`
-- User Service: `http://localhost:8083`
-- Recommendation Service: `http://localhost:8084`
-- Recipe Search Service: `http://localhost:8085`
-- Favourites Service: `http://localhost:8086`
-- Notification Service: `http://localhost:8087`
-- History Service: `http://localhost:8088`
-
-### 2. Run Frontend (React)
-
-```bash
-cd frontend/chefathands-frontend
-npm install
-npm start
-```
-
-Frontend will be available at `http://localhost:3000`
-
-### 3. Stop All Services
-
-```bash
+# Stop all services
 docker-compose down
 ```
 
-## Building from Source
+## 📦 Docker Hub Images
 
-### 1. Install Parent POM
+All container images are publicly available at Docker Hub:
 
-```bash
-mvn clean install
+**Registry:** https://hub.docker.com/u/anejt
+
+**Available Images:**
+- `anejt/chefathands-ingredient-service:latest`
+- `anejt/chefathands-user-service:latest`
+- `anejt/chefathands-logging-service:latest`
+- `anejt/chefathands-favourites-service:latest`
+- `anejt/chefathands-history-service:latest`
+- `anejt/chefathands-notification-service:latest`
+- `anejt/chefathands-recipe-search-service:latest`
+- `anejt/chefathands-recommendation-service:latest`
+- `anejt/chefathands-frontend-gateway:latest`
+- `anejt/chefathands-frontend:latest`
+
+## 📂 Project Structure
+
+```
+ChefAtHands/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml              # CI/CD pipeline configuration
+├── k8s/                            # Kubernetes manifests
+│   ├── database-secret.yaml
+│   ├── ingredient-service.yaml
+│   ├── user-service.yaml
+│   ├── frontend-gateway.yaml
+│   ├── ingress.yaml
+│   └── ...
+├── utility-services/               # Core utility microservices
+│   ├── ingredient-service/
+│   ├── user-service/
+│   ├── logging-service/
+│   ├── favourites-service/
+│   ├── history-service/
+│   └── notification-service/
+├── processing-services/            # Data processing services
+│   └── recommendation-service/
+├── external-api-services/          # External API integrations
+│   └── recipe-search-service/
+├── frontend-gateway/               # API Gateway
+├── frontend/                       # React frontend (submodule)
+│   └── chefathands-frontend/
+├── docker-compose.yml              # Local development setup
+├── pom.xml                         # Maven parent POM
+└── README.md
 ```
 
-### 2. Build Individual Services
+## 🔗 Module Repositories (Git Submodules)
+
+This project uses Git submodules for modular development:
+
+- [db](https://github.com/ChefAtHands/db) - Database schemas
+- [frontend](https://github.com/ChefAtHands/frontend) - React application
+- [frontend-gateway](https://github.com/ChefAtHands/frontend-gateway) - API Gateway
+- [processing-services](https://github.com/ChefAtHands/processing-services) - Processing microservices
+- [utility-services](https://github.com/ChefAtHands/utility-services) - Utility microservices
+- [external-api-services](https://github.com/ChefAtHands/external-api-services) - External integrations
+
+### Cloning with Submodules:
 
 ```bash
-# Example: Build ingredient service
-cd utility-services/ingredient-service
-mvn clean package -DskipTests
+# Clone with all submodules
+git clone --recursive https://github.com/yourusername/ChefAtHands.git
+
+# Or if already cloned
+git submodule update --init --recursive
 ```
 
-### 3. Build Docker Images
+## 🛠️ Technology Stack
 
-```bash
-# Build individual service
-cd utility-services/ingredient-service
-docker build -t chefathands-ingredient-service:latest .
+### Backend:
+- **Framework:** Spring Boot 3.x
+- **Language:** Java 17
+- **Build Tool:** Maven
+- **Database:** Azure SQL Database
+- **ORM:** Spring Data JPA / Hibernate
+- **API Documentation:** OpenAPI/Swagger
 
-# Or use the provided script to build all services
-# (Create a build script if needed)
-```
+### Frontend:
+- **Framework:** React 18
+- **State Management:** React Context / Redux
+- **Styling:** CSS Modules / Styled Components
+- **HTTP Client:** Axios
 
-### 4. Push to Docker Hub (for contributors)
+### DevOps & Infrastructure:
+- **Containerization:** Docker
+- **Orchestration:** Kubernetes (AKS)
+- **CI/CD:** GitHub Actions
+- **Cloud Provider:** Microsoft Azure
+- **Container Registry:** Docker Hub
+- **Monitoring:** Azure Monitor (planned)
 
-```bash
-# Tag with your Docker Hub username
-docker tag chefathands-ingredient-service:latest yourusername/chefathands-ingredient-service:latest
+## 📊 Monitoring & Logging
+### Health Checks:
+Each service exposes health endpoints:
+- `GET /actuator/health` - Service health status
+- `GET /actuator/info` - Service information
 
-# Push
-docker push yourusername/chefathands-ingredient-service:latest
-```
+## 🔐 Security
 
-## Architecture
+- **Authentication:** JWT-based authentication via user-service
+- **Secrets Management:** Kubernetes secrets
+- **Database:** Encrypted connections to Azure SQL
+- **API Gateway:** Rate limiting and request validation
 
-ChefAtHands consists of the following microservices:
+## 🤝 Contributing
 
-### Utility Services
-- **ingredient-service** - Manages ingredients and user ingredient inventory
-- **user-service** - User authentication and profile management
-- **logging-service** - Centralized logging
-- **favourites-service** - User recipe favourites
-- **notification-service** - User notifications
-- **history-service** - Recipe search history
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### Processing Services
-- **recommendation-service** - Recipe recommendations based on available ingredients
+**Note:** All PRs trigger automated tests. Ensure tests pass before requesting review.
 
-### External API Services
-- **recipe-search-service** - Integration with external recipe APIs (Spoonacular)
+## 📝 API Documentation
 
-### Gateway
-- **frontend-gateway** - API gateway for frontend requests
+API documentation is available at:
+- api_specification.yaml
 
-### Frontend
-- **React SPA** - User interface
+## 📄 License
 
-## Module Repositories
+This project is part of an academic assignment for PRPO course.
 
-- [db](https://github.com/ChefAtHands/db)
-- [frontend](https://github.com/ChefAtHands/frontend)
-- [frontend-gateway](https://github.com/ChefAtHands/frontend-gateway)
-- [processing-services](https://github.com/ChefAtHands/processing-services)
-- [utility-services](https://github.com/ChefAtHands/utility-services)
-- [external-api-services](https://github.com/ChefAtHands/external-api-services)
+## 👥 Team
 
-## Docker Hub Images
+**ChefAtHands Development Team**
+- Anej Tomplak - Full Stack Development, DevOps
+- Matej Kristan - Full Stack Development
+- Jan Napast - Full Stack Development
 
-All images are available at: https://hub.docker.com/u/anejt
+---
 
+**Built with ❤️ for PRPO Course - University of Ljubljana, Faculty of Computer and Information Science**
