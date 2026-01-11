@@ -1,6 +1,6 @@
-# ChefAtHands 🍳
+# ChefAtHands
 
-![Build Status](https://github.com/yourusername/ChefAtHands/actions/workflows/deploy.yml/badge.svg)
+![Build Status](https://github.com/ChefAtHands/ChefAtHands/actions/workflows/deploy.yml/badge.svg)
 ![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
 ![Deployment](https://img.shields.io/badge/deployment-AKS-blue)
 
@@ -22,7 +22,7 @@ The application is automatically deployed to **Azure Kubernetes Service (AKS)** 
 
 **Production URL:** `http://9.235.148.20/`
 
-## 📋 Prerequisites
+## Prerequisites
 
 ### For Development:
 - Java 17
@@ -47,30 +47,30 @@ Our automated CI/CD pipeline is built with **GitHub Actions** and performs the f
 ### Utility Services
 | Service | Port | Description | Status |
 |---------|------|-------------|--------|
-| **ingredient-service** | 8081 | Manages ingredients and user inventory | ✅ Active |
-| **user-service** | 8083 | User authentication and profiles | ✅ Active |
-| **logging-service** | 8082 | Centralized logging | ✅ Active |
-| **favourites-service** | 8086 | User recipe favourites | ✅ Active |
-| **notification-service** | 8087 | User notifications | ✅ Active |
-| **history-service** | 8088 | Recipe search history | ✅ Active |
+| **ingredient-service** | 8081 | Manages ingredients and user inventory |
+| **user-service** | 8083 | User authentication and profiles |
+| **logging-service** | 8082 | Centralized logging |
+| **favourites-service** | 8086 | User recipe favourites |
+| **notification-service** | 8087 | User notifications |
+| **history-service** | 8088 | Recipe search history |
 
 ### Processing Services
 | Service | Port | Description | Status |
 |---------|------|-------------|--------|
-| **recommendation-service** | 8084 | recipe recommendations | ✅ Active |
+| **recommendation-service** | 8084 | recipe recommendations |
 
 ### External API Services
 | Service | Port | Description | Status |
 |---------|------|-------------|--------|
-| **recipe-search-service** | 8085 | Spoonacular API integration | ✅ Active |
+| **recipe-search-service** | 8085 | Spoonacular API integration |
 
 ### Gateway & Frontend
 | Component | Port | Description | Status |
 |-----------|------|-------------|--------|
-| **frontend-gateway** | 8080 | API Gateway for React frontend | ✅ Active |
-| **React Frontend** | 3000 (dev) / 80 (prod) | User interface | ✅ Active |
+| **frontend-gateway** | 8080 | API Gateway for React frontend |
+| **React Frontend** | 3000 (dev) / 80 (prod) | User interface |
 
-## 🐳 Docker Quick Start
+## Docker Quick Start
 
 ### Pull and Run 
 
@@ -146,7 +146,7 @@ ChefAtHands/
 
 This project uses Git submodules for modular development:
 
-- [db](https://github.com/ChefAtHands/db) - Database schemas
+- [db](https://github.com/ChefAtHands/db) - Database schemas for local testing
 - [frontend](https://github.com/ChefAtHands/frontend) - React application
 - [frontend-gateway](https://github.com/ChefAtHands/frontend-gateway) - API Gateway
 - [processing-services](https://github.com/ChefAtHands/processing-services) - Processing microservices
@@ -157,7 +157,7 @@ This project uses Git submodules for modular development:
 
 ```bash
 # Clone with all submodules
-git clone --recursive https://github.com/yourusername/ChefAtHands.git
+git clone --recursive https://github.com/ChefAtHands/ChefAtHands.git
 
 # Or if already cloned
 git submodule update --init --recursive
@@ -199,21 +199,10 @@ Each service exposes health endpoints:
 - **Database:** Encrypted connections to Azure SQL
 - **API Gateway:** Rate limiting and request validation
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-**Note:** All PRs trigger automated tests. Ensure tests pass before requesting review.
-
 ## API Documentation
 
 API documentation is available at:
 - api_specification.yaml
-
 
 ## Team
 
