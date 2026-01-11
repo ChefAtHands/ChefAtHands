@@ -6,7 +6,7 @@
 
 Microservices-based recipe recommendation system that helps users find recipes based on their available ingredients. Built with Spring Boot microservices, React frontend, and deployed on Azure Kubernetes Service (AKS).
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ChefAtHands is a cloud-native microservices application featuring:
 - **9 Spring Boot Microservices**
@@ -16,7 +16,7 @@ ChefAtHands is a cloud-native microservices application featuring:
 - **Automated CI/CD Pipeline**
 - **Docker Containerization**
 
-## 🚀 Live Deployment
+## Live Deployment
 
 The application is automatically deployed to **Azure Kubernetes Service (AKS)** on every commit to the `main` branch.
 
@@ -31,7 +31,7 @@ The application is automatically deployed to **Azure Kubernetes Service (AKS)** 
 - Node.js 20+ & npm
 - kubectl (for Kubernetes operations)
 
-## 🔄 CI/CD Pipeline
+## CI/CD Pipeline
 
 Our automated CI/CD pipeline is built with **GitHub Actions** and performs the following on every commit:
 
@@ -42,7 +42,7 @@ Our automated CI/CD pipeline is built with **GitHub Actions** and performs the f
 └─────────────┘      └─────────────┘      └─────────────┘      └─────────────┘
 ```
 
-## 🏛️ Microservices Architecture
+## Microservices Architecture
 
 ### Utility Services
 | Service | Port | Description | Status |
@@ -91,7 +91,7 @@ docker-compose logs -f
 docker-compose down
 ```
 
-## 📦 Docker Hub Images
+## Docker Hub Images
 
 All container images are publicly available at Docker Hub:
 
@@ -109,7 +109,7 @@ All container images are publicly available at Docker Hub:
 - `anejt/chefathands-frontend-gateway:latest`
 - `anejt/chefathands-frontend:latest`
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 ChefAtHands/
@@ -142,7 +142,7 @@ ChefAtHands/
 └── README.md
 ```
 
-## 🔗 Module Repositories (Git Submodules)
+## Module Repositories (Git Submodules)
 
 This project uses Git submodules for modular development:
 
@@ -163,7 +163,7 @@ git clone --recursive https://github.com/yourusername/ChefAtHands.git
 git submodule update --init --recursive
 ```
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### Backend:
 - **Framework:** Spring Boot 3.x
@@ -187,20 +187,19 @@ git submodule update --init --recursive
 - **Container Registry:** Docker Hub
 - **Monitoring:** Azure Monitor (planned)
 
-## 📊 Monitoring & Logging
+## Monitoring & Logging
 ### Health Checks:
 Each service exposes health endpoints:
 - `GET /actuator/health` - Service health status
 - `GET /actuator/info` - Service information
 
-## 🔐 Security
+## Security
 
-- **Authentication:** JWT-based authentication via user-service
 - **Secrets Management:** Kubernetes secrets
 - **Database:** Encrypted connections to Azure SQL
 - **API Gateway:** Rate limiting and request validation
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -210,16 +209,13 @@ Each service exposes health endpoints:
 
 **Note:** All PRs trigger automated tests. Ensure tests pass before requesting review.
 
-## 📝 API Documentation
+## API Documentation
 
 API documentation is available at:
 - api_specification.yaml
 
-## 📄 License
 
-This project is part of an academic assignment for PRPO course.
-
-## 👥 Team
+## Team
 
 **ChefAtHands Development Team**
 - Anej Tomplak - Full Stack Development, DevOps
@@ -227,5 +223,3 @@ This project is part of an academic assignment for PRPO course.
 - Jan Napast - Full Stack Development
 
 ---
-
-**Built with ❤️ for PRPO Course - University of Ljubljana, Faculty of Computer and Information Science**
