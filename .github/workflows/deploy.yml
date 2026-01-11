@@ -236,27 +236,30 @@ jobs:
         run: |
           echo "=== Pod Status ==="
           kubectl get pods -n ${{ env.NAMESPACE }} -o wide
-          echo ""
-          echo "=== Failed/Pending Pods Details ==="
-          kubectl get pods -n ${{ env.NAMESPACE }} --field-selector=status.phase!=Running,status.phase!=Succeeded -o yaml || echo "All pods are running"
 
-      - name: Show pod logs for failed pods
+      - name: Show logs for crashing pods
         if: always()
         run: |
-          echo "=== Checking for problematic pods ==="
-          FAILED_PODS=$(kubectl get pods -n ${{ env.NAMESPACE }} --field-selector=status.phase!=Running,status.phase!=Succeeded -o jsonpath='{.items[*].metadata.name}' || echo "")
-          if [ -n "$FAILED_PODS" ]; then
-            for pod in $FAILED_PODS; do
-              echo "=== Logs for $pod ==="
-              kubectl logs $pod -n ${{ env.NAMESPACE }} --tail=50 || echo "No logs available"
-              echo ""
-              echo "=== Describe $pod ==="
-              kubectl describe pod $pod -n ${{ env.NAMESPACE }}
-              echo "---"
-            done
-          else
-            echo "No failed pods found"
-          fi
+          echo "=== Logs for favourites-service ==="
+          kubectl logs deployment/favourites-service -n ${{ env.NAMESPACE }} --tail=100 || echo "No logs available"
+          echo ""
+          echo "=== Logs for history-service ==="
+          kubectl logs deployment/history-service -n ${{ env.NAMESPACE }} --tail=100 || echo "No logs available"
+          echo ""
+          echo "=== Logs for notification-service ==="
+          kubectl logs deployment/notification-service -n ${{ env.NAMESPACE }} --tail=100 || echo "No logs available"
+
+      - name: Describe crashing pods
+        if: always()
+        run: |
+          echo "=== Describe favourites-service pod ==="
+          kubectl describe pod -l app=favourites-service -n ${{ env.NAMESPACE }}
+          echo ""
+          echo "=== Describe history-service pod ==="
+          kubectl describe pod -l app=history-service -n ${{ env.NAMESPACE }}
+          echo ""
+          echo "=== Describe notification-service pod ==="
+          kubectl describe pod -l app=notification-service -n ${{ env.NAMESPACE }}
 
       - name: Show service and ingress status
         if: always()
