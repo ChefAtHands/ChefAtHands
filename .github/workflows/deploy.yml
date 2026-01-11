@@ -228,7 +228,7 @@ jobs:
 
       - name: Wait for deployments (with extended timeout)
         run: |
-          kubectl rollout status deployment -n ${{ env.NAMESPACE }} --timeout=10m
+          kubectl rollout status deployment -n ${{ env.NAMESPACE }} --timeout=5m
         continue-on-error: true
 
       - name: Check pod status
